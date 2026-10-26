@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BUTTERFLY FX — An Interactive History of Small Decisions</title>
+  <style>
+    :root {
+      --bg: #0b0b0e;
+      --terminal-bg: #131317;
+      --terminal-border: #24242c;
+      --header-bg: #17171d;
+      
+      /* Eye-Friendly Warm Amber Palette */
+      --accent: #d97706;
+      --accent-hover: #b45309;
+      --accent-light: #f59e0b;
+      --accent-subtle: rgba(217, 119, 6, 0.12);
+      
+      /* Restful Neutral Shades */
+      --card-bg: #16161b;
+      --card-border: #282832;
+      --text-main: #d4d4d8;
+      --text-subtle: #9ca3af;
+      --text-muted: #5b5b66;
+      
+      /* Original Clean Monospace Font Stack (No external webfont lag) */
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      line-height: 1.68;
+    }
+
+    /* Terminal Container with Cinematic Smooth Dissolve */
+    .terminal-window {
+      width: 100%;
+      max-width: 800px;
+      background: var(--terminal-bg);
+      border: 1px solid var(--terminal-border);
+      border-radius: 10px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.95);
+      overflow: hidden;
+      opacity: 1;
+      transition: opacity 0.50s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Long, Natural Dissolve Fade Out */
+    .terminal-window.fading-out {
+      opacity: 0;
+    }
+
+    /* Top Bar */
+    .terminal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--terminal-border);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .mac-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #e05252; }
+    .dot-yellow { background: #eab308; }
+    .dot-green { background: #22c55e; }
+
+    .terminal-title {
+      color: var(--text-subtle);
+      letter-spacing: -0.01em;
+    }
+
+    .step-indicator {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Body */
+    .terminal-body {
+      padding: 24px 28px;
+    }
+
+    /* ASCII Header in Warm Amber */
+    .ascii-art {
+      font-size: 0.60rem;
+      line-height: 1.15;
+      color: var(--accent);
+      white-space: pre;
+      margin-bottom: 1.2rem;
+      user-select: none;
+      opacity: 0.95;
+    }
+
+    /* Narrative Card */
+    .narrative-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 22px 24px;
+      margin-bottom: 1.4rem;
+      position: relative;
+    }
+
+    .scene-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+
+    .scene-timestamp {
+      font-size: 0.76rem;
+      color: var(--accent-light);
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .scene-context-tag {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* Minimal [LOGGED] Indicator (Consequence Screen Only) */
+    .logged-row {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logged-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #0b0b0e;
+      background: var(--accent-light);
+      padding: 3px 8px;
+      border-radius: 3px;
+      text-transform: uppercase;
+    }
+
+    .logged-subtext {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    /* Prose Styling (Comfortable 14-15px / 0.92rem) */
+    .scene-prose {
+      font-size: 0.92rem;
+      color: var(--text-main);
+      line-height: 1.74;
+    }
+
+    .scene-prose p {
+      margin-bottom: 12px;
+    }
+
+    .scene-prose p:last-child {
+      margin-bottom: 0;
+    }
+
+    .scene-prose em {
+      color: #fff;
+      font-style: italic;
+    }
+
+    /* Contextual Situation Note (Pure Narrative, No System Labels) */
+    .residue-note {
+      margin-top: 14px;
+      padding: 9px 13px;
+      background: #111115;
+      border-left: 2px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.79rem;
+      color: var(--text-subtle);
+      line-height: 1.55;
+    }
+
+    .trace-echo {
+      margin-top: 14px;
+      padding: 11px 13px;
+      background: #111115;
+      border: 1px solid #2b2b35;
+      border-left: 2px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.80rem;
+      line-height: 1.6;
+      color: var(--text-subtle);
+    }
+
+    .trace-echo strong {
+      display: block;
+      margin-bottom: 0;
+      color: var(--accent-light);
+      font-size: 0.70rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .trace-echo p {
+      margin: 0;
+    }
+
+    .trace-echo p + p {
+      margin-top: 0.9em;
+    }
+
+    /* Controls & Options */
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 1.4rem;
+    }
+
+    .primary-btn {
+      background: var(--accent);
+      color: #0c0c0e;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      width: fit-content;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    .choice-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: #15151a;
+      border: 1px solid #292934;
+      color: #e4e4e7;
+      padding: 13px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85rem;
+      text-align: left;
+      transition: all 0.15s ease;
+      width: 100%;
+      line-height: 1.5;
+    }
+
+    .choice-btn:hover {
+      background: #1c1c24;
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .btn-key {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid #3e3e4e;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .choice-btn:hover .btn-key {
+      border-color: var(--accent-light);
+      color: var(--accent-light);
+    }
+
+    /* Dual History Section */
+    .dual-history-wrap {
+      border-top: 1px solid var(--terminal-border);
+      padding-top: 16px;
+      margin-top: 16px;
+      display: none;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .timeline-col {
+      background: #0f0f13;
+      border: 1px solid #1f1f27;
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .timeline-col-header {
+      font-size: 0.70rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .timeline-feed {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.76rem;
+      color: var(--text-subtle);
+      line-height: 1.45;
+    }
+
+    .timeline-feed li {
+      padding-left: 10px;
+      border-left: 1px solid #282834;
+      position: relative;
+    }
+
+    .timeline-feed li::before {
+      content: "";
+      position: absolute;
+      left: -3px;
+      top: 6px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .timeline-feed li.recent::before {
+      background: var(--accent-light);
+    }
+
+    /* Alternate World Comparison View at Ending */
+    .ending-block {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .ending-title-group {
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+    }
+
+    .ending-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .ending-subtitle {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
+    }
+
+    .ending-milestones {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #101015;
+      border: 1px solid #22222d;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 0.82rem;
+    }
+
+    .milestone-item strong {
+      color: var(--accent-light);
+      font-size: 0.75rem;
+      display: block;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ending-analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .analysis-card {
+      background: #111116;
+      border: 1px solid #22222c;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .analysis-card strong {
+      display: block;
+      color: var(--text-main);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .trace-remaining-card .trace-card-title {
+      margin-bottom: 0;
+    }
+
+    .trace-remaining-card .trace-item {
+      margin: 0 0 0.9em;
+      line-height: 1.55;
+    }
+
+    .trace-remaining-card .trace-item strong {
+      display: block;
+      margin-bottom: 0;
+    }
+
+    .trace-remaining-card .trace-caveat {
+      margin-top: 0;
+      color: #9ca3af;
+      font-size: 0.76rem;
+      line-height: 1.5;
+    }
+
+    .comparison-section {
+      margin-top: 14px;
+      border-top: 1px solid var(--terminal-border);
+      padding-top: 16px;
+    }
+
+    .comparison-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .comparison-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .compare-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .tab-btn {
+      background: #141419;
+      border: 1px solid #282834;
+      color: var(--text-subtle);
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.74rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      border-color: #555566;
+    }
+
+    .tab-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
+      color: #fff;
+    }
+
+    .compare-panel {
+      background: #0f0f13;
+      border: 1px solid #22222d;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 0.80rem;
+      color: var(--text-subtle);
+      line-height: 1.55;
+    }
+
+    .reflective-prompt {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: #111116;
+      border-left: 2px solid var(--accent);
+      font-size: 0.82rem;
+      color: #e2e2e7;
+      font-style: italic;
+    }
+
+    /* Terminal Footer */
+    .terminal-footer {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--terminal-border);
+      padding-top: 14px;
+      margin-top: 14px;
+    }
+
+    .author-note-btn {
+      color: var(--accent-light);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.74rem;
+    }
+
+    .author-note-btn:hover {
+      color: #fff;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.90);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 100;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #141419;
+      border: 1px solid #2d2d3a;
+      max-width: 660px;
+      max-height: 85vh;
+      border-radius: 8px;
+      padding: 24px;
+      overflow-y: auto;
+      font-size: 0.84rem;
+      line-height: 1.7;
+    }
+
+    .modal-content h3 {
+      color: #fff;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #2a2a36;
+      padding-bottom: 8px;
+    }
+
+    .modal-content p {
+      margin-bottom: 14px;
+      color: #d1d5db;
+    }
+
+    .modal-close-btn {
+      background: var(--accent);
+      color: #0b0b0e;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 680px) {
+      .dual-history-wrap {
+        grid-template-columns: 1fr;
+      }
+      .ending-analysis-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="terminal-window" id="terminal-window">
+    <!-- Header -->
+    <div class="terminal-header">
+      <div class="header-left">
+        <div class="mac-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <span class="terminal-title">butterfly-fx — ~/uac-to-slc/psychology-cohort</span>
+      </div>
+      <span class="step-indicator" id="step-indicator">Prologue · Time Rewind</span>
+    </div>
+
+    <!-- Main Body -->
+    <div class="terminal-body">
+      <!-- Warm Amber ASCII Logo -->
+      <pre class="ascii-art">
+ ____  _   _ _____ _____ _____ ____  _____ _ __   __  _______  __
+| __ )| | | |_   _|_   _| ____|  _ \|  ___| |\ \ / / |  ___\ \/ /
+|  _ \| | | | | |   | | |  _| | |_) | |_  | | \ V /  | |_   \  / 
+| |_) | |_| | | |   | | | |___|  _ <|  _| | |__| |   |  _|  /  \ 
+|____/ \___/  |_|   |_| |_____|_| \_\_|   |_|__|_|   |_|   /_/\_\</pre>
+
+      <!-- Main Narrative Card -->
+      <div class="narrative-card" id="narrative-card">
+        <div class="scene-meta-row">
+          <span class="scene-timestamp" id="scene-timestamp">PRESENT: OCTOBER 2026 · BEFORE THE SLC TRANSITION</span>
+          <span class="scene-context-tag" id="scene-context-tag">LOOKING BACK</span>
+        </div>
+
+        <!-- Minimal [LOGGED] Indicator (Only visible on consequence screen) -->
+        <div class="logged-row" id="logged-row" style="display: none;">
+          <span class="logged-pill">LOGGED</span>
+          <span class="logged-subtext">Action committed to timeline</span>
+        </div>
+
+        <!-- Main Narrative Prose / Behavioral Consequence Text -->
+        <div class="scene-prose" id="scene-prose">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Contextual Situation Note (Pure Narrative) -->
+        <div class="residue-note" id="residue-note" style="display: none;">
+          <!-- Contextual residue text -->
+        </div>
+      </div>
+
+      <!-- Action Area -->
+      <div class="controls-container" id="controls-container">
+        <!-- Buttons injected by JS -->
+      </div>
+
+      <!-- Dual Connected Histories (Visible on Decision & Ending scenes; hidden ONLY on Consequence screen) -->
+      <div class="dual-history-wrap" id="dual-history-wrap">
+        <div class="timeline-col">
+          <div class="timeline-col-header">
+            <span>My Personal Trajectory</span>
+            <span id="personal-event-count">0 logged</span>
+          </div>
+          <ul class="timeline-feed" id="personal-timeline-feed">
+            <!-- Injected -->
+          </ul>
+        </div>
+        <div class="timeline-col">
+          <div class="timeline-col-header">
+            <span>World History & Cultural Norms</span>
+            <span id="world-event-count">0 logged</span>
+          </div>
+          <ul class="timeline-feed" id="world-timeline-feed">
+            <!-- Injected -->
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="terminal-footer">
+        <span id="footer-instruction">Press [1], [2], [3] to choose · [Enter] to continue</span>
+        <button class="author-note-btn" id="open-author-note">What this is about</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Author's Note Modal -->
+  <div class="modal-overlay" id="author-modal">
+    <div class="modal-content">
+      <h3>What This Is About</h3>
+      <p>
+        "Butterfly Effect" --It's been said that something as small as the flutter of a butterfly's wing can cause a typhoon halfway around the world. History is filled with such linchpins-- small events or decisions that have huge effects on the future. Make you own change somewhere in history and show us the effects on the world.
+      </p>
+      <p>
+        This story draws on my experience as a UAC student preparing to move to SLC. The branching events and future scenarios are imagined possibilities, not predictions.
+      </p>
+      <button class="modal-close-btn" id="close-author-modal">Return to Terminal</button>
+    </div>
+  </div>
+
+  <script>
+/* ============================================================
+   BUTTERFLY FX — INTEGRATED CAUSAL SIMULATION
+   Personal Narrative States & Emergent World System Variables
+   ============================================================ */
+
+const sessionHistory = {
+  choices: {},
+  personalLog: [],
+  worldLog: [],
+  
+  // Internal psychological states (-8 to +8)
+  ownership: 0,          // Intellectual agency vs. outsourcing judgment
+  capacity: 0,           // Physical energy, sleep reserve, mental bandwidth
+  ambiguityTolerance: 0, // Tolerance for incomplete drafts & unanswered questions
+  connection: 0,         // Mutual vulnerability & shared peer problem-solving
+  
+  // Independent systemic world variables (Evolving social landscape)
+  worldState: {
+    peerDiffusion: 0,       // Small-scale circulation of automated workflows
+    criticalFriction: 0,    // Local practices of checking, questioning, and explaining
+    institutionalStrain: 0  // Questions instructors are beginning to notice
+  },
+
+  // A small practice begins in one person's life, then may travel and change form.
+  trace: {
+    originChoice: null,
+    origin: "",
+    type: null,
+    title: "",
+    bridge: "",
+    peer: "",
+    classroom: "",
+    institutional: "",
+    fate: null
+  },
+
+  patterns: {
+    efficiency: 0,
+    delegation: 0,
+    avoidance: 0,
+    overload: 0,
+    restBoundary: 0,
+    verification: 0,
+    peerAutomation: 0,
+    peerVerification: 0,
+    peerSupport: 0,
+    unscripted: 0,
+    preparedScaffold: 0,
+    toolAccess: 0,
+    processPolicy: 0,
+    workloadPolicy: 0,
+    helpSeeking: 0,
+    collaborativePlanning: 0
+  }
+};
+
+let currentStepKey = "prologue";
+let isTransitionScreen = false;
+let pendingNextStep = null;
+let isDissolving = false;
+
+/* ============================================================
+   DYNAMIC WORLD HISTORY GENERATOR (CAUSAL REACTION)
+   ============================================================ */
+function generateDynamicWorldEvent(decisionNo, choiceKey, session) {
+  const ws = session.worldState;
+
+  if (decisionNo === 1) {
+    if (choiceKey === "A") {
+      ws.peerDiffusion += 0.25;
+      return "Oct 2024: One student uses an AI generated draft to get past a blank page. No wider change is visible yet. What matters for now is that the method worked under pressure.";
+    }
+    if (choiceKey === "B") {
+      ws.criticalFriction += 0.25;
+      return "Oct 2024: A student uses an assistant to test a rough argument. The effect stays within one assignment. hether the method will be used again is still unknown.";
+    }
+    return "Oct 2024: The assignment is set aside for a while. From outside the room, nothing changes. The cost is simply that less time remains when the student returns.";
+  }
+
+  if (decisionNo === 2) {
+    if (choiceKey === "A") {
+      ws.peerDiffusion += 0.3;
+      ws.institutionalStrain += 0.2;
+      return "Nov 2024: A polished assignment passes through an ordinary grading process. The instructor sees the finished work, not all the decisions that produced it.";
+    }
+    if (choiceKey === "B") {
+      ws.criticalFriction += 0.4;
+      return "Nov 2024: A short private note separates what the student can explain from what remains uncertain. It is a useful record, though it has not travelled beyond the student yet.";
+    }
+    ws.institutionalStrain += 0.15;
+    return "Nov 2024: One specific question reaches an instructor. It offers a glimpse of one student's confusion, not evidence of a campus-wide pattern.";
+  }
+
+  if (decisionNo === 3) {
+    if (choiceKey === "A") {
+      ws.institutionalStrain += 0.2;
+      return ws.peerDiffusion >= 0.5
+        ? "Fall 2025: The student returns to a familiar shortcut after a night of scrolling. Other students may have similar routines, but the overlap remains mostly invisible in class."
+        : "Fall 2025: A late night absorbs some of the pressure in private. It does not change the workload, and no wider effect can be inferred from this one night.";
+    }
+    if (choiceKey === "B") {
+      ws.criticalFriction += 0.15;
+      return "Fall 2025: One student chooses sleep with work unfinished. The next morning may be easier to face, even though the deadlines and expectations are still there.";
+    }
+    ws.criticalFriction += 0.25;
+    return "Fall 2025: A message proposes working alongside a classmate the next day. It may become a small routine if both people find the time.";
+  }
+
+  if (decisionNo === 4) {
+    if (choiceKey === "A") {
+      ws.peerDiffusion += 0.6;
+      ws.institutionalStrain += 0.2;
+      return "Spring 2026: A drafting workflow reaches one classmate. They may use it as given, adapt part of it, or pass it on; its reach is still uncertain.";
+    }
+    if (choiceKey === "B") {
+      ws.criticalFriction += 0.6;
+      return "Spring 2026: One peer tries a method for separating claims from evidence and checking sources. They keep some of it and adapt the rest to their own assignment.";
+    }
+    ws.criticalFriction += 0.25;
+    ws.institutionalStrain += 0.15;
+    return "Spring 2026: Two students spend time working side by side. The workload does not disappear, but asking for company becomes a little easier between them.";
+  }
+
+  if (decisionNo === 5) {
+    if (choiceKey === "A") {
+      ws.institutionalStrain += 0.45;
+      return ws.peerDiffusion >= 0.8
+        ? "Spring 2027: Prepared notes help several students enter discussion, but follow-up questions still require individual judgment. One instructor begins considering how future assignments might make that distinction clearer."
+        : "Spring 2027: One seminar exposes a small gap between summarizing an argument and evaluating it. It may inform a later assignment, but one discussion does not change a course by itself.";
+    }
+    if (choiceKey === "B") {
+      ws.criticalFriction += 0.45;
+      return "Spring 2027: An imperfect interpretation is challenged and revised in discussion. The exchange gives one class a useful example of how understanding can develop in public, without establishing a new norm on its own.";
+    }
+    ws.criticalFriction += 0.35;
+    return "Spring 2027: A student's question sends the group back to the evidence. The immediate effect is local: the class has a clearer problem to examine, not a universal answer.";
+  }
+
+  if (decisionNo === 6) {
+    if (choiceKey === "A") {
+      ws.peerDiffusion += 0.3;
+      return "Fall 2027: A comment about fair access to useful tools is recorded alongside different views in course feedback. It may inform later guidance; no policy is settled in the room.";
+    }
+    if (choiceKey === "B") {
+      ws.institutionalStrain += 0.3;
+      ws.criticalFriction += 0.3;
+      return "Fall 2027: An instructor notes a suggestion to ask students to explain one key claim or meaningful revision in a future assignment. Any trial would be limited and would need to account for added workload.";
+    }
+    ws.criticalFriction += 0.2;
+    return "Fall 2027: Comments about overlapping deadlines and access to support are grouped for course review. A coordinator may consider the timing of future work, while wider workload pressures remain beyond one class's control.";
+  }
+
+  return "A small event is recorded. Its wider significance remains uncertain.";
+}
+
+/* ============================================================
+   THE TRACE THAT TRAVELS
+   ============================================================ */
+function updateTravelingTrace(decisionNo, choice, session) {
+  const trace = session.trace;
+
+  if (decisionNo === 1) {
+    trace.originChoice = choice.key;
+    trace.origin = {
+      A: "It began with a complete draft that made an empty document feel manageable.",
+      B: "It began with a rough argument and a tool used to question it.",
+      C: "It began with stepping away from the task to reclaim a little time and relief."
+    }[choice.key];
+    return;
+  }
+
+  if (decisionNo === 4) {
+    const routes = {
+      A: {
+        type: "workflow",
+        title: "The Shared Workflow",
+        peer: "One classmate tries the drafting workflow on another assignment. They change parts of it and may pass on their version. The method travels beyond the first conversation, but no one can say how far it will go."
+      },
+      B: {
+        type: "question",
+        title: "The Three-Part Check",
+        peer: "One classmate keeps a small part of the method: separate the claim, the evidence, and what remains uncertain. They use it once, then adapt it to fit their own work. It is a tool they might return to, not yet a shared norm."
+      },
+      C: {
+        type: "conversation",
+        title: "The Invitation to Work Beside Someone",
+        peer: "The two of you work in the same room for a while. A later study session is possible, though neither of you has solved the workload problem. The trace is a small invitation that can be repeated."
+      }
+    }[choice.key];
+
+    const bridges = {
+      A: {
+        workflow: "What began as a complete draft that made the blank page disappear has become something repeatable that another student can use. The relief you once experienced is now being passed along, though you cannot control what gets checked.",
+        question: "The first complete draft helped you move quickly, but it left questions about what you truly understood. When your friend asks for help, you offer a check on the argument instead of simply passing along the same shortcut.",
+        conversation: "The first complete draft offered relief without requiring you to explain the struggle to anyone. This time, you respond to someone else's overload by offering your time and company, not only a tool."
+      },
+      B: {
+        workflow: "You began by keeping the argument yours while using AI to test it. Now you are turning part of that experience into a repeatable workflow another student can try; how much judgment it preserves will depend on how they use it.",
+        question: "The rough argument you tested in your first year has become a small process you can explain to someone else: separate the claim, the evidence, and the uncertainty.",
+        conversation: "You once worked through confusion by testing your own argument. Now you offer someone else a chance to work through theirs beside you, making the private struggle a little less private."
+      },
+      C: {
+        workflow: "At first, you stepped away from the assignment to reclaim a little relief rather than solve it. As the workload kept returning, you later looked for a repeatable way through it—and found a workflow you could pass on.",
+        question: "Stepping away gave you a moment of relief, but the pressure was still waiting when you returned. The check you share now offers one way to make re-entering the task less shapeless, without pretending the pressure is gone.",
+        conversation: "What began as stepping away from an overwhelming task takes a different form here. Instead of leaving another person alone with that pressure, you suggest sitting beside them for a while."
+      }
+    };
+
+    trace.type = routes.type;
+    trace.title = routes.title;
+    trace.bridge = (bridges[trace.originChoice] || bridges.B)[routes.type];
+    trace.peer = `${trace.bridge} ${routes.peer}`;
+    return;
+  }
+
+  if (decisionNo === 5 && trace.type) {
+    const classroomEcho = {
+      workflow: {
+        A: "In the seminar, the workflow helps you enter the discussion but does not decide what you believe. It remains useful; the question of what to verify is still open.",
+        B: "After your interpretation is challenged, you add a reminder to the workflow: identify one claim you can defend and one you still need to check. The original shortcut is modified, not replaced.",
+        C: "The class returns to the evidence after your question. The workflow you shared now sits beside another habit: pause and ask what the material actually supports."
+      },
+      question: {
+        A: "Your notes help you enter the discussion, while the three-part check helps you notice which part is summary and which part is your own judgment.",
+        B: "The claim/evidence/uncertainty note becomes useful during discussion. It does not settle the argument; it helps the group identify where they disagree.",
+        C: "A specific question makes the uncertainty visible to the group. The check you shared with a peer now has a second use: finding a question worth discussing."
+      },
+      conversation: {
+        A: "The earlier study session does not prepare you for every question, but it makes it a little more familiar to ask someone to clarify a point rather than pretend to understand.",
+        B: "You offer an unfinished interpretation and a classmate helps test it. This resembles the shared work in Songdo, but it is still one useful discussion rather than a lasting rule.",
+        C: "You ask a question and other students join in. The conversation creates a brief opportunity to think together; whether that becomes a habit depends on who can make time for it."
+      }
+    };
+    const classroomConnections = {
+      workflow: "The workflow that travelled from Songdo now meets a different test in the SLC seminar: it may help you get into the conversation, but it cannot make the judgment for you.",
+      question: "The claim/evidence/uncertainty check that travelled from Songdo enters a new setting, where it can help distinguish a clear summary from a defensible interpretation.",
+      conversation: "The invitation to work beside someone cannot answer the seminar question for you, but it makes asking, revising, and thinking in company feel a little more available."
+    };
+    trace.classroom = `${classroomConnections[trace.type]} ${classroomEcho[trace.type][choice.key]}`;
+    return;
+  }
+
+  if (decisionNo === 6 && trace.type) {
+    const institutionalEcho = {
+      A: "Your comment about access joins other feedback. A future course may share clearer guidance about useful tools, but access alone cannot determine what a student learns.",
+      B: "The instructor notes the possibility of asking students to explain one claim or meaningful revision. It may shape a future assignment, but any change would be local and would need to avoid turning learning into constant proof of innocence.",
+      C: "Your comment joins other concerns about workload and deadlines. A course coordinator may revisit the sequencing of assignments; the broader pressures that shaped the original choice remain unresolved."
+    }[choice.key];
+    const institutionalConnections = {
+      A: "The seminar did not settle how students should use tools, but it gave your comment about access a concrete context.",
+      B: "The seminar made the difference between summarizing an argument and judging it visible. Your suggestion grows out of that experience, though it would still need to be tested carefully.",
+      C: "The seminar asked what the evidence supports; the feedback forum brings the question back to the conditions under which students have time and energy to examine it."
+    };
+    trace.institutional = `${institutionalConnections[choice.key]} ${institutionalEcho}`;
+    trace.fate = determineTraceFate(trace, session);
+  }
+}
+
+function determineTraceFate(trace, session) {
+  const seminarChoice = session.choices.d5;
+  const feedbackChoice = session.choices.d6;
+
+  if (feedbackChoice === "B") {
+    return seminarChoice === "A" ? "assessment_cautious" : "assessment";
+  }
+  if (feedbackChoice === "A") return "access";
+  if (feedbackChoice === "C") return "workload";
+  if (trace.type === "conversation" && (seminarChoice === "B" || seminarChoice === "C")) return "peer";
+  if (seminarChoice === "A" && (trace.type === "workflow" || trace.type === "question")) return "diffusion";
+  if (seminarChoice === "B" || seminarChoice === "C") return "adapted";
+  return "local";
+}
+
+function traceLongTermText(endingKey, trace = sessionHistory.trace) {
+  if (!trace.type) {
+    return "No single practice can be traced clearly through this route. The earlier choices still shaped your life, but their wider effects may have remained private or mixed with many other influences.";
+  }
+
+  const routeOutcomes = {
+    workflow: "The workflow continues to appear in private student chats and shared notes. Because it began as a way to get past the blank page, some versions still prioritize speed; others carry forward the later reminder to inspect a claim before accepting it.",
+    question: "The claim/evidence/uncertainty check survives as a small tool that some students use when an answer sounds convincing but feels incomplete. Its usefulness depends on whether people have enough time and guidance to practice it.",
+    conversation: "The invitation to work beside someone is harder to scale than a template. It survives more often as an informal study habit: useful to people who can find the time and a willing partner, unavailable to others with conflicting schedules."
+  };
+
+  const fateOutcomes = {
+    assessment: "The Fall 2027 feedback leads, at most, to a limited experiment in asking students to explain one claim or meaningful revision. It remains a local teaching choice, not a campus-wide rule.",
+    assessment_cautious: "The suggestion to explain a claim or revision is recorded for possible future assignments. Because the seminar also showed how prepared notes can help students participate, any trial would need to distinguish useful support from a demand to prove every step of one's thinking.",
+    access: "The feedback leaves a modest call for clearer guidance about access and appropriate use. Some courses may respond; others may not, and access to a tool still does not guarantee the time or support needed to evaluate its output.",
+    workload: "The institutional echo is about workload and the sequencing of assignments rather than the tool alone. It may inform a local review, but it cannot remove the larger pressures that shaped the original choice.",
+    peer: "The clearest lasting effect stays interpersonal: sharing an unfinished thought becomes a little easier for a few people. That opening still depends on trust, time, and whether someone else is available.",
+    diffusion: "The method keeps travelling in the form it had in the seminar: useful prepared notes or a quick workflow. Some people adapt it with checks; others preserve the speed-first version, so the practice remains mixed.",
+    adapted: "The original practice changes as it meets other people and a different classroom. A few students keep a part of it, but it remains a modest habit rather than a new norm.",
+    local: "The trace remains mostly local, carried in the memory of a particular exchange rather than in a visible policy or widespread routine. Its effect on the people involved still matters, even without a public marker."
+  };
+
+  const endingLens = {
+    A: "In a future where fluent output is ordinary, the trace matters less as a rule about whether a tool is used and more as a reminder to judge what it produces.",
+    B: "In a future with stronger demands to document process, this trace is one small example among many; it does not by itself explain or cause the broader oversight culture.",
+    C: "In a more unequal future, the practice's benefits remain uneven because time, support, and the ability to inspect results are not distributed equally.",
+    D: "In a future with a different default, this remains one modest variation among many small practices that may sometimes reinforce one another."
+  };
+
+  const fate = trace.fate || determineTraceFate(trace, sessionHistory);
+  return `${routeOutcomes[trace.type]} ${fateOutcomes[fate] || fateOutcomes.local} ${endingLens[endingKey] || endingLens.D}`;
+}
+
+/* ============================================================
+   SCENARIO SPECIFICATION WITH PURE NARRATIVE CONTEXT
+   ============================================================ */
+const SCENES = {
+  prologue: {
+    stepLabel: "Prologue · Looking Back",
+    timestamp: "OCTOBER 2026 · SONGDO",
+    context: "BEFORE THE SPRING 2027 TRANSITION",
+    prose: `
+      <p>October 2026. You are still in Songdo. Salt Lake City is on the calendar for next spring, surrounded by paperwork, plans, and the assignments that does not pause just because a major change is coming.</p>
+      <p>You open a document. Before you have decided what you think, you find yourself opening an AI chat window. Your phone is beside the keyboard. Neither action feels particularly dramatic anymore.</p>
+      <p>When you first arrived at university in 2024, you had a clear rule about doing your own work. You want to know when that rule began to feel less simple— not to identify one disastrous moment, but to trace what became easier to do next.</p>
+    `,
+    buttonText: "Rewind to the first year",
+    next: "d1_first_year"
+  },
+
+  d1_first_year: {
+    decisionNo: 1,
+    stepLabel: "Decision 1 of 6 · The First Shortcut",
+    timestamp: "2024 · FIRST YEAR AT UAC · 02:17 AM",
+    context: "A DEADLINE IS APPROACHING",
+    prose: `
+      <p>You have spent a long time rereading the same passage and moving fragments of notes around. The assignment is due soon, and you know what it is asking you to do. You just cannot find a way into it.</p>
+      <p>When you arrived at university, you thought that forming your own argument was part of the point. You still believe that. Tonight, though, the belief feels like one more thing you are failing to keep up with.</p>
+      <p>The AI chat window is already open in another tab. Your phone is within reach. What do you do?</p>
+    `,
+    residueFn: () => null,
+    choices: [
+      {
+        key: "A",
+        text: "Ask AI for a complete draft that you can clean up and adapt.",
+        consequenceProse: `
+          <p>The blank page disappears. A coherent structure appears quickly enough that your breathing slows a little. For the first time tonight, you can see how the assignment might end.</p>
+          <p>You tell yourself you will check it carefully. You mean to. But relief arrives before you have worked out which parts you agree with, which parts you understand, and which parts you are accepting because there is no time left.</p>
+          <p>Nothing dramatic happens. You have found a way through one difficult night, and the experience is likely to matter because it worked.</p>
+        `,
+        personalEvent: "First year: Used a generated draft to get past a blank page; felt immediate relief, with questions left about what was truly understood.",
+        delta: { ownership: -2, capacity: 1, ambiguityTolerance: -2, connection: 0 },
+        signals: { efficiency: 1, delegation: 2 },
+        next: "d2_morning_after"
+      },
+      {
+        key: "B",
+        text: "Write a rough argument yourself, then ask AI to challenge its logic.",
+        consequenceProse: `
+          <p>The first two sentences are awkward. The assistant points out a gap you had not noticed, and for a moment the feedback feels like another task added to an already long night.</p>
+          <p>Still, you have something concrete to examine. You can accept the criticism, reject part of it, or rewrite the argument. The work takes longer, but the tool has not decided what you believe.</p>
+          <p>You do not feel transformed. You are simply a little further into the assignment than you were before.</p>
+        `,
+        personalEvent: "First year: Made an imperfect starting argument and used AI to test it; gained something to revise, at the cost of time and effort.",
+        delta: { ownership: 2, capacity: -1, ambiguityTolerance: 2, connection: 0 },
+        signals: { verification: 2 },
+        next: "d2_morning_after"
+      },
+      {
+        key: "C",
+        text: "Close the document and scroll on your phone until you feel less cornered.",
+        consequenceProse: `
+          <p>For a while, the assignment stops demanding anything from you. The videos are not solving the problem, but they give your attention somewhere else to go. That brief relief is real.</p>
+          <p>When you look at the time, the deadline is closer and the document is unchanged. You are not suddenly a different person because you avoided the work; you just have less room left in which to deal with it.</p>
+          <p>The question is no longer only how to begin. It is also how much time remains.</p>
+        `,
+        personalEvent: "First year: Turned to the phone for immediate relief; the pressure eased briefly while the task remained and time narrowed.",
+        delta: { ownership: 0, capacity: -2, ambiguityTolerance: -1, connection: 0 },
+        signals: { avoidance: 1, overload: 1 },
+        next: "d2_morning_after"
+      }
+    ]
+  },
+
+  d2_morning_after: {
+    decisionNo: 2,
+    stepLabel: "Decision 2 of 6 · The Morning After",
+    timestamp: "THE FOLLOWING MORNING · FIRST YEAR",
+    context: "THE WORK IS NO LONGER JUST AN IDEA",
+    proseFn: (history) => {
+      let stateNuance = "";
+      if (history.ownership < 0) {
+        stateNuance = "<p>Reading paragraph three, an unsettling sensation surfaces: the prose is completely fluent, yet you feel like an editor reviewing someone else's work rather than its author.</p>";
+      } else if (history.ownership > 0) {
+        stateNuance = "<p>The margins are messy with strikethroughs, but you recognize every sentence. Even the clumsy phrasing belongs unmistakably to your own hands.</p>";
+      }
+
+      if (history.choices.d1 === "A") return `
+        <p>The assignment has a shape now. When you reread it, the prose is smooth enough to move through quickly. A few terms feel familiar, but you are not certain you could explain every step of the argument without looking back at the page.</p>
+        ${stateNuance}
+        <p>You could spend more time checking it. You could move on to the next obligation. You could ask someone about the part that still does not make sense. None of those options gives you more hours in the day.</p>
+      `;
+      if (history.choices.d1 === "B") return `
+        <p>Your draft is uneven. One paragraph repeats itself; another makes a claim you have not supported yet. You remember why you wrote most of it, even if you are not sure how to fix every weakness.</p>
+        ${stateNuance}
+        <p>The cost of working through it is visible in the time you have left. So is the benefit: at least you can point to the places where your own understanding stops.</p>
+      `;
+      return `
+        <p>The document is still incomplete. You are trying to recover the time you spent away from it, and now even deciding what to do first takes effort.</p>
+        <p>You could submit what you can, spend the remaining time understanding one part, or ask for help. None of these options erases the night that has passed.</p>
+      `;
+    },
+    residueFn: (history) => {
+      if (history.ambiguityTolerance < 0) {
+        return "Leaving the gaps unresolved feels deeply uncomfortable; your mind feels an urgent pull toward quick closure, however it is achieved.";
+      }
+      if (history.ownership > 0) {
+        return "You have an uneven draft you can still defend, and only a short window of time to decide what deserves attention.";
+      }
+      return "Relief bought you distance from the task, but not extra time. The next decision is being made under a tighter constraint.";
+    },
+    choices: [
+      {
+        key: "A",
+        text: "Submit what is ready and move on to the next deadline.",
+        consequenceProse: `
+          <p>You decide that finishing this task is not the same thing as resolving every doubt about it. There are other deadlines waiting, and you cannot give every uncertainty unlimited time.</p>
+          <p>The choice brings some room to breathe. A few questions remain unanswered, but for now you move on.</p>
+        `,
+        personalEvent: "First year: Prioritized getting the work off the list; gained time for the next demand while leaving some uncertainty unresolved.",
+        delta: { ownership: -1, capacity: 1, ambiguityTolerance: -1, connection: 0 },
+        signals: { efficiency: 1, delegation: 1 },
+        next: "d3_five_more_minutes"
+      },
+      {
+        key: "B",
+        text: "Write down what you understand, what you believe, and what you still cannot explain.",
+        consequenceProse: `
+          <p>You spend a few minutes putting the argument into plain language. It takes longer than you hoped, and the list of uncertainties is not reassuring. But the gaps now have edges. You can see which one matters most.</p>
+          <p>You still have to decide what to do with the assignment. The exercise does not guarantee a better grade or make you less tired; it gives you a clearer picture of what you know.</p>
+        `,
+        personalEvent: "First year: Separated what was understood from what remained uncertain; gained clarity without eliminating the workload.",
+        delta: { ownership: 2, capacity: -1, ambiguityTolerance: 2, connection: 0 },
+        signals: { verification: 1 },
+        next: "d3_five_more_minutes"
+      },
+      {
+        key: "C",
+        text: "Send one specific question to a classmate or instructor instead of hiding the gap.",
+        consequenceProse: `
+          <p>You type a short message. You do not confess your entire life or offer a polished explanation of why you are struggling. You ask about one part you cannot resolve.</p>
+          <p>No immediate reply appears. The assignment is still there, and asking does not guarantee that anyone will be available. But the question is no longer something you must solve entirely in private.</p>
+        `,
+        personalEvent: "First year: Made one specific request for help; the problem remained, but part of it was no longer being carried alone.",
+        delta: { ownership: 1, capacity: 0, ambiguityTolerance: 1, connection: 2 },
+        signals: { helpSeeking: 1 },
+        next: "d3_five_more_minutes"
+      }
+    ]
+  },
+
+  d3_five_more_minutes: {
+    decisionNo: 3,
+    stepLabel: "Decision 3 of 6 · Five More Minutes",
+    timestamp: "2025 · SECOND YEAR · LATE NIGHT",
+    context: "TIME THAT FEELS LIKE YOUR OWN",
+    proseFn: (history) => {
+      let internalTension = "";
+      if (history.ownership <= -2) {
+        internalTension = "<p>A quiet realization unsettles you: starting a paper from your own blank thoughts has begun to feel like an unnecessary friction when an automated prompt can generate the opening in seconds.</p>";
+      } else if (history.ownership >= 2) {
+        internalTension = "<p>You remember that manual drafting takes real effort, but you also know the quiet confidence of walking into class knowing every sentence was yours.</p>";
+      }
+
+      let ambiguityNuance = "";
+      if (history.ambiguityTolerance < 0) {
+        ambiguityNuance = "<p>The thought of putting the phone down and lying in the dark with unresolved tasks feels intolerable. The screen acts as an emotional sedative.</p>";
+      }
+
+      return `
+        <p>A year has passed. You have more classes, more small deadlines, and more things to remember than can fit comfortably into a single day.</p>
+        <p>You got into bed intending to sleep. The phone is close enough to reach without sitting up. After a full day of responding to other people's expectations, scrolling feels like a small piece of time that belongs only to you.</p>
+        <p>Forty minutes pass. You are tired, but turning the screen off means returning to a mind full of unfinished things.</p>
+        ${internalTension}
+        ${ambiguityNuance}
+      `;
+    },
+    residueFn: (history) => {
+      const notes = [];
+      if (history.ambiguityTolerance < 0) {
+        notes.push("Sitting in the dark with unresolved tasks feels intolerable; the phone provides a quick way to drown out the noise.");
+      }
+      if (history.ownership > 0) {
+        notes.push("You remember the slow drag of writing the argument yourself, and the quiet relief of knowing the words were yours.");
+      }
+      if (history.capacity < 0) {
+        notes.push("Exhaustion has narrowed your patience. Any small friction tonight feels twice as heavy.");
+      }
+      return notes.length > 0 ? notes.join(" ") : "The immediate relief of moving on is familiar. So is the fact that the tasks tend to be waiting when you return.";
+    },
+    choices: [
+      {
+        key: "A",
+        text: "Keep scrolling. You need a little more time in which nobody is asking anything of you.",
+        consequenceProse: `
+          <p>You keep watching. For a while, you do not need to make a decision, explain yourself, or produce anything. The relief is not imaginary, and you do not stop because you have suddenly become careless.</p>
+          <p>You stop later than intended. Morning arrives with less time and less energy available. The work has not become harder in itself, but it now competes with a smaller reserve of attention.</p>
+        `,
+        personalEvent: "Second year: Extended a private interval of relief into the night; gained escape in the moment and had less capacity the next day.",
+        delta: { ownership: -1, capacity: -2, ambiguityTolerance: -2, connection: 0 },
+        signals: { avoidance: 2, overload: 2 },
+        next: "d4_friend_asks"
+      },
+      {
+        key: "B",
+        text: "Put the phone out of reach and sleep, leaving some work unfinished for now.",
+        consequenceProse: `
+          <p>You put the phone down. The unfinished tasks are still present, so the first minutes are not especially peaceful. You have to let the day remain incomplete.</p>
+          <p>Sleep does not solve the workload or guarantee that tomorrow will go well. It gives you a better chance of meeting the same problems with more energy. The choice is a boundary, not a cure.</p>
+        `,
+        personalEvent: "Second year: Chose sleep while work remained unfinished; protected some capacity without pretending the obligations had disappeared.",
+        delta: { ownership: 1, capacity: 2, ambiguityTolerance: 1, connection: 0 },
+        signals: { restBoundary: 2 },
+        next: "d4_friend_asks"
+      },
+      {
+        key: "C",
+        text: "Write down three realistic priorities and message a classmate about working alongside each other tomorrow.",
+        consequenceProse: `
+          <p>You write three lines rather than a perfect schedule. One task can wait; one needs attention first; one may require another person. You send a message suggesting that you work alongside each other tomorrow.</p>
+          <p>You do not know whether your classmate will be free, and the list does not make the semester manageable. It does make the next step less shapeless.</p>
+        `,
+        personalEvent: "Second year: Turned a vague pile of obligations into a short plan and opened a possible connection to a peer.",
+        delta: { ownership: 1, capacity: 1, ambiguityTolerance: 1, connection: 2 },
+        signals: { collaborativePlanning: 2, helpSeeking: 1 },
+        next: "d4_friend_asks"
+      }
+    ]
+  },
+
+  d4_friend_asks: {
+    decisionNo: 4,
+    stepLabel: "Decision 4 of 6 · The Friend Who Asks",
+    timestamp: "SPRING 2026 · SONGDO",
+    context: "A PRIVATE WORKAROUND MEETS ANOTHER PERSON",
+    proseFn: (history) => {
+      let peerPerception = "";
+      if (history.worldState.peerDiffusion >= 0.5) {
+        peerPerception = "<p>Your classmate says: <em>'I've heard a couple of people talk about prompt templates. I'm not sure what to trust, and I still have to understand the paper. What have you tried?'</em></p>";
+      } else {
+        peerPerception = "<p>Your classmate looks exhausted: <em>'I've been staring at this developmental psychology paper for five hours and I can't even write the introduction. How do you actually survive this?'</em></p>";
+      }
+
+      let personalStance = "";
+      if (history.ownership <= -2) {
+        personalStance = "<p>You hesitate. Part of you wants to give them your exact prompt chain—it saved you before, and withholding it feels almost unkind when someone is drowning.</p>";
+      } else if (history.ownership >= 2) {
+        personalStance = "<p>You know the temptation of passing them an easy prompt, but you also know that having your thinking done for you leaves you feeling strangely hollow the next morning.</p>";
+      }
+
+      return `
+        <p>A student from your cohort sits beside you in the lounge with a blank document. They have spent hours trying to begin an assignment and look close to tears.</p>
+        ${peerPerception}
+        ${personalStance}
+        <p>This is the first point at which your private way of coping can become someone else's default option. It still does not determine what they will do with it.</p>
+      `;
+    },
+    residueFn: (history) => {
+      if (history.ownership < 0) {
+        return "You know how easily a prompt can make the assignment vanish. Sharing the shortcut feels almost instinctive, even if it leaves understanding behind.";
+      }
+      if (history.ambiguityTolerance > 0) {
+        return "You have grown more used to working through confusion, but your friend is in acute panic and needs something usable tonight.";
+      }
+      return "You remember how private a difficult night can feel. You cannot promise that talking will solve it, but you can choose what to pass on.";
+    },
+    choices: [
+      {
+        key: "A",
+        text: "Share the prompt workflow that gets a structured draft on the page quickly.",
+        consequenceProse: `
+          <p>The workflow helps your classmate move past the blank page. They ask you to send the prompt, and you do. They are visibly relieved; you are glad you could offer something practical.</p>
+          <p>Later, they adapt it for a different assignment and pass part of the method to someone else. You do not know what they checked, what they accepted, or whether the approach suited their task. The method has travelled farther than the original conversation, but its effects are no longer yours to control.</p>
+        `,
+        personalEvent: "Spring 2026: Shared a fast drafting workflow with a peer; offered immediate practical help without controlling how it would be used.",
+        delta: { ownership: -2, capacity: 1, ambiguityTolerance: -2, connection: 1 },
+        signals: { efficiency: 1, peerAutomation: 2 },
+        next: "d5_slc_seminar"
+      },
+      {
+        key: "B",
+        text: "Show how you draft your own claim first, then use AI to question the logic and check claims against sources.",
+        consequenceProse: `
+          <p>You explain the method and show how you compare an answer with the assigned material. Your classmate sees how it might work, then looks at the clock.</p>
+          <p>“I can try that when I have more time,” they say. They take one part of the method with them, but not all of it. The approach has travelled; whether it becomes a habit will depend on the conditions they return to.</p>
+        `,
+        personalEvent: "Spring 2026: Shared a way to use AI for critique and verification while retaining responsibility for the argument.",
+        delta: { ownership: 2, capacity: 0, ambiguityTolerance: 2, connection: 1 },
+        signals: { verification: 1, peerVerification: 2 },
+        next: "d5_slc_seminar"
+      },
+      {
+        key: "C",
+        text: "Admit that you are struggling too, and suggest working side by side for a while.",
+        consequenceProse: `
+          <p>You say you have not found a reliable way to stay ahead of everything. The admission does not turn into a breakthrough conversation. Your classmate admits they thought everyone else was managing better.</p>
+          <p>You work in the same room for a while. Neither of you finishes everything. Still, the problem feels less like a private defect and more like a difficulty you can talk about with another person.</p>
+        `,
+        personalEvent: "Spring 2026: Acknowledged the difficulty instead of presenting a solved routine; shared time with a peer without promising a fix.",
+        delta: { ownership: 1, capacity: -1, ambiguityTolerance: 1, connection: 3 },
+        signals: { peerSupport: 2, helpSeeking: 1 },
+        next: "d5_slc_seminar"
+      }
+    ]
+  },
+
+  d5_slc_seminar: {
+    decisionNo: 5,
+    stepLabel: "Decision 5 of 6 · A Different Classroom",
+    timestamp: "SPRING 2027 · SALT LAKE CITY",
+    context: "THE TRANSITION IS NO LONGER FUTURE TENSE",
+    proseFn: (history) => {
+      let seminarAtmosphere = "";
+      if (history.worldState.institutionalStrain >= 0.7) {
+        seminarAtmosphere = "<p>Professor Holbrook looks over the notes on the table: <em>'Several summaries are clear and well organized. I want us to look beyond the summary now. What part of the evidence supports the authors' conclusion, and what part leaves room for doubt?'</em></p>";
+      } else {
+        seminarAtmosphere = "<p>In an advanced psychology seminar, Professor Holbrook turns the discussion to an empirical paper: <em>'The summaries are clear enough. But let's look at the secondary hypothesis. Does the evidence actually support their conclusion, or are we just accepting their framing?'</em></p>";
+      }
+
+      let internalCognitiveState = "";
+      if (history.ownership <= -2) {
+        internalCognitiveState = "<p>Your prepared notes are full of elegant bullet points generated an hour before class. But as you look at them, a familiar panic rises: you know the phrases, but your throat tightens because you aren't sure you could defend the underlying logic if someone poked a hole in it.</p>";
+      } else if (history.ownership >= 2) {
+        internalCognitiveState = "<p>Your notes are rough and full of handwritten question marks. You don't have a canned summary, but you know exactly which paragraph felt fishy when you read it last night.</p>";
+      }
+
+      return `
+        <p>Spring 2027. You have made the transition to Salt Lake City. Outside, the Wasatch Mountains are visible through the seminar window.</p>
+        ${seminarAtmosphere}
+        ${internalCognitiveState}
+        <p>No one is asking you to be brilliant. They are asking you to make a judgment with the information you have.</p>
+      `;
+    },
+    residueFn: (history) => {
+      if (history.ambiguityTolerance < 0 && history.ownership < 0) {
+        return "The fear of being caught without a prepared safety net is sharp; the safest instinct is to lean on textbook phrases.";
+      }
+      if (history.ambiguityTolerance >= 2) {
+        return "You are more accustomed to unfinished thoughts; admitting that a piece of evidence confuses you feels like an honest way into the conversation.";
+      }
+      return "The earlier choices have not determined this moment. They have only left you with memories, habits, and a limited amount of energy.";
+    },
+    choices: [
+      {
+        key: "A",
+        text: "Use your prepared notes to make the argument clear before deciding what you think of it.",
+        consequenceProse: `
+          <p>Your notes help you explain the authors' position with structure and speed. When the conversation moves to your personal assessment, you have to slow down and look again at the evidence.</p>
+          <p>You contribute something useful, but not the whole answer. The notes helped you enter the discussion; they could not make the judgment for you. You leave with a clearer sense of which part you need to examine next.</p>
+        `,
+        personalEvent: "Spring 2027: Used prepared notes to enter a seminar discussion, then had to distinguish summary from personal judgment.",
+        delta: { ownership: -1, capacity: 1, ambiguityTolerance: -1, connection: 0 },
+        signals: { preparedScaffold: 2, efficiency: 1 },
+        next: "d6_course_feedback"
+      },
+      {
+        key: "B",
+        text: "Offer your own imperfect interpretation and let the discussion test it.",
+        consequenceProse: `
+          <p>You state the part of the argument that does not convince you. Another student points out a detail you overlooked. Your first explanation does not survive intact, so you revise it.</p>
+          <p>The moment is uncomfortable, and it does not end with a perfect answer. But you have taken part in the work of figuring something out rather than only presenting its finished shape.</p>
+        `,
+        personalEvent: "Spring 2027: Put an unfinished interpretation into discussion and revised it after a peer challenged part of it.",
+        delta: { ownership: 3, capacity: -1, ambiguityTolerance: 3, connection: 1 },
+        signals: { unscripted: 2, verification: 1 },
+        next: "d6_course_feedback"
+      },
+      {
+        key: "C",
+        text: "Ask a specific question about the gap between the evidence and the conclusion.",
+        consequenceProse: `
+          <p>You name the part that does not line up for you. The answer is not immediate. One student sees the issue differently; another returns to the methods section.</p>
+          <p>Your question does not make you the most insightful person in the room. It gives the group a more precise problem to examine, and leaves you with a better sense of what remains unresolved.</p>
+        `,
+        personalEvent: "Spring 2027: Turned uncertainty into a specific question that made the evidence easier to examine with others.",
+        delta: { ownership: 2, capacity: 0, ambiguityTolerance: 2, connection: 2 },
+        signals: { unscripted: 1, verification: 1, helpSeeking: 1 },
+        next: "d6_course_feedback"
+      }
+    ]
+  },
+
+  d6_course_feedback: {
+    decisionNo: 6,
+    stepLabel: "Decision 6 of 6 · What Travels Beyond You?",
+    timestamp: "FALL 2027 · SALT LAKE CITY",
+    context: "A SMALL OPENING FOR FEEDBACK",
+    proseFn: (history) => {
+      let institutionalContext = "";
+      if (history.worldState.institutionalStrain >= 0.9) {
+        institutionalContext = "<p>There is some tension in the discussion. Instructors are unsure how much a polished final product reveals about a student's process, while students point out that time, language demands, and overlapping deadlines shape how they work.</p>";
+      } else {
+        institutionalContext = "<p>In a course feedback session, students and instructors debate what helps learning and what makes thoughtful work feel unsustainable.</p>";
+      }
+
+      let livedExperience = "";
+      if (history.ownership >= 3) {
+        livedExperience = "<p>You have fought to keep your own voice intact through two years of university. You know the exhausting cost of manual friction, but you also know what you would have lost without it.</p>";
+      } else if (history.ownership <= -3) {
+        livedExperience = "<p>You know from personal experience that when academic demands become crushing, students do not use shortcuts to cheat—they use them to survive.</p>";
+      }
+
+      return `
+        <p>Fall 2027. A student-faculty curriculum forum at the Utah Memorial Union asks how courses should balance AI usage, workload, and authentic learning.</p>
+        ${institutionalContext}
+        ${livedExperience}
+        <p>You have one comment to offer. What do you want the people designing the curriculum to consider?</p>
+      `;
+    },
+    residueFn: (history) => {
+      const parts = [];
+      if (history.ownership >= 2) {
+        parts.push("You know from experience that forming your own thoughts takes time and friction that students are rarely given.");
+      }
+      if (history.ownership <= -2) {
+        parts.push("You know firsthand that when academic demands become unmanageable, shortcuts are adopted to survive rather than to cheat.");
+      }
+      if (history.ambiguityTolerance >= 2) {
+        parts.push("You have seen how much easier it is to demand polished output than to support the messy process of learning.");
+      }
+      return parts.length > 0 ? parts.join(" ") : "Your route has combined relief, uncertainty, and trade-offs. None gives you an absolute answer.";
+    },
+    choices: [
+      {
+        key: "A",
+        text: "Argue that students need fair access to useful AI tools, especially when time and language demands are unequal.",
+        consequenceProse: `
+          <p>Your comment makes a practical point: access matters, and banning a tool does not give every student the same amount of time, support, or confidence in academic English.</p>
+          <p>Another student agrees, while someone else asks how instructors will know what students have actually learned. Your comment enters the discussion, but the conflict is not resolved. Fair access and meaningful evaluation both remain real concerns.</p>
+        `,
+        personalEvent: "Fall 2027: Emphasized fair access to tools that can reduce practical barriers, while leaving questions about learning and evaluation open.",
+        delta: { ownership: -1, capacity: 1, ambiguityTolerance: -1, connection: 1 },
+        signals: { toolAccess: 2, efficiency: 1 },
+        next: "ending_reveal"
+      },
+      {
+        key: "B",
+        text: "Recommend assessing understanding and the work process, without turning every assignment into surveillance.",
+        consequenceProse: `
+          <p>You suggest that students should sometimes explain their reasoning, show meaningful revisions, or discuss the decisions behind a final answer—not because every step must be monitored, but because the final product does not always tell the whole story.</p>
+          <p>Some students worry that extra documentation would become another burden. The instructor writes down both points. A better assessment would need to reveal learning without making students prove their innocence at every step.</p>
+        `,
+        personalEvent: "Fall 2027: Proposed ways to make understanding visible while resisting an assessment system built entirely around suspicion.",
+        delta: { ownership: 2, capacity: -1, ambiguityTolerance: 2, connection: 1 },
+        signals: { processPolicy: 2, verification: 1 },
+        next: "ending_reveal"
+      },
+      {
+        key: "C",
+        text: "Argue that tool rules are incomplete unless the course also addresses workload, deadlines, and access to support.",
+        consequenceProse: `
+          <p>You describe how the same task can feel manageable on a rested day and impossible when several deadlines collide. A tool policy might shape what students are allowed to do, but it cannot by itself create more time or energy.</p>
+          <p>The instructor agrees that workload coordination deserves attention, while noting that one course cannot fix every wider demand. Your comment is not a solution. It makes the conditions around the choice harder to ignore.</p>
+        `,
+        personalEvent: "Fall 2027: Connected academic choices to the conditions surrounding them—time, workload, rest, and access to help.",
+        delta: { ownership: 1, capacity: 2, ambiguityTolerance: 2, connection: 3 },
+        signals: { workloadPolicy: 2, peerSupport: 1 },
+        next: "ending_reveal"
+      }
+    ]
+  }
+};
+
+/* ============================================================
+   FOUR PLAUSIBLE ALTERNATE HISTORIES (UNBIASED SPECULATION)
+   ============================================================ */
+const ENDINGS = {
+  A: {
+    title: "Fluency at Scale",
+    subtitle: "More can be produced. What has been understood is harder to see.",
+    personalLife: "You learn to move through assignments quickly and to use AI without much hesitation. This is not all loss: you can get past blank pages, manage language demands, and reserve time for other responsibilities. But in unfamiliar situations, you sometimes notice that your first move is still to request an interpretation before looking closely at the material yourself. You have to decide, case by case, when that is useful and when it postpones your own judgment.",
+    milestones: [
+      { year: "2027 · CAMPUS", text: "Students increasingly exchange workflows that turn difficult assignments into manageable sequences of prompts. For some, the tools widen access and reduce wasted effort; for others, the output arrives faster than the time needed to examine it." },
+      { year: "2030 · ACADEMIA", text: "Some courses redesign assignments around verification, discussion, and application because polished prose alone reveals little about how a conclusion was reached. Other courses emphasize output and efficiency. Practices diverge rather than changing everywhere at once." },
+      { year: "2036 · WIDER SYSTEM", text: "AI-assisted work is ordinary in many knowledge jobs. The central question is not whether people use it, but who is expected to verify its work, who has time to do so, and how institutions recognize responsibility. Compute-related energy and water use remain part of the cost that organizations must weigh against the benefits." }
+    ],
+    plausibility: "This trajectory becomes more plausible when quick completion is repeatedly useful, efficient workflows are shared, and institutions prioritize access and throughput. It still depends on many other people's decisions and constraints.",
+    benefits: "Faster drafting, help with language barriers, wider access to technical assistance, and more time for some tasks that would otherwise be delayed.",
+    tradeoffs: "The difference between producing an answer and understanding it can become harder to assess. Verification remains work, and pressure to be productive may rise along with output.",
+    uncertainty: "It remains unclear which kinds of judgment people will continue to practice directly, and how institutions will distribute the responsibility for checking automated work."
+  },
+  B: {
+    title: "The Audited University",
+    subtitle: "When institutions try to make thinking visible, proof can become another burden.",
+    personalLife: "You become more accustomed to explaining how you reached a conclusion. Sometimes this helps you notice gaps and discuss them with others. At other times, documenting every stage feels like a second assignment. You can value transparency without wanting every draft, hesitation, or private thought to become evidence submitted for inspection.",
+    milestones: [
+      { year: "2027 · CAMPUS", text: "Some instructors ask students to discuss their reasoning, compare drafts, or identify which tools they used. The practices help in some assignments but require time to design and assess; students differ in how comfortable they feel explaining their work aloud." },
+      { year: "2030 · ACADEMIA", text: "Universities experiment with process-based assessment to distinguish understanding from polished output. Some designs support learning; others drift toward excessive documentation or suspicion. Institutions debate how much evidence is useful and when monitoring becomes intrusive." },
+      { year: "2036 · WIDER SYSTEM", text: "Credentials increasingly vary in how they demonstrate a person's ability to explain, verify, and defend their work. Transparency is valued, but so are privacy and accommodations for people who do not show understanding best through live performance or extensive process records." }
+    ],
+    plausibility: "This path becomes more plausible when concern about authorship leads institutions to redesign evaluation. The extent and fairness of those changes depend on instructors, resources, and students' needs.",
+    benefits: "More opportunities to explain reasoning, identify misunderstandings, and make the learning process count alongside the final product.",
+    tradeoffs: "Extra assessment work, pressure to perform understanding on demand, privacy concerns, and a risk that students spend more time proving their process than learning.",
+    uncertainty: "It remains uncertain whether process evidence would support intellectual independence or simply create a more elaborate performance of compliance."
+  },
+  C: {
+    title: "The Unequal Divide",
+    subtitle: "The advantage is not simply using a tool. It is having time to use it well.",
+    personalLife: "You continue switching between careful work and urgent shortcuts, depending on how much time and energy you have. You notice that classmates make different choices under different conditions. Someone with time, feedback, and a quiet place to work can use a tool as one stage of a longer process; someone managing several competing demands may need an answer that is usable now. The difference is not explained by character alone.",
+    milestones: [
+      { year: "2027 · CAMPUS", text: "Students with different schedules and support systems develop different ways of using AI. The same tool can extend one person's learning while helping another get through the week without time to inspect what it produced." },
+      { year: "2030 · ACADEMIA", text: "Some programs offer close feedback, small-group discussion, and time to revise; others rely more heavily on scalable automated support. The division is not absolute, but the opportunity to practice slow, supported thinking is distributed unevenly." },
+      { year: "2036 · WIDER SYSTEM", text: "Organizations debate whether AI reduces barriers or simply shifts the burden of checking and decision-making onto people with the least time. Access to a tool is widespread in some settings, while access to mentorship, time, and meaningful feedback remains uneven." }
+    ],
+    plausibility: "This trajectory becomes more plausible when workload pressure remains high and support is uneven, so private coping strategies fill gaps that institutions have not addressed. No single student's choices produce the divide.",
+    benefits: "Automation can help people meet immediate obligations when other forms of support are unavailable. It may prevent a difficult task from becoming an impossible one.",
+    tradeoffs: "The opportunity to question, revise, and understand an answer may depend on how much time and support a person can afford. Unequal conditions can persist even when the tools themselves are accessible.",
+    uncertainty: "It remains uncertain whether institutions will treat time, mentorship, and feedback as shared educational resources or leave them to individual circumstances."
+  },
+  D: {
+    title: "A Different Default",
+    subtitle: "Not a perfect solution—an environment that makes more than one response possible.",
+    personalLife: "You still use AI, and you still have nights when you avoid what you need to do. The difference is not that you become perfectly disciplined. You grow more able to notice what you are asking the tool to do, when you need a break, and when the workload requires a conversation rather than another private workaround. Sometimes you make a different choice; sometimes you do not. Neither moment defines the whole pattern.",
+    milestones: [
+      { year: "2027 · CAMPUS", text: "Some student groups and instructors begin sharing practical approaches to transparent tool use, peer feedback, and more manageable assignments. The changes stay local at first, and participation is uneven." },
+      { year: "2030 · ACADEMIA", text: "A number of programs combine clear AI-use expectations with assignments that let students practice, explain, and revise their thinking. Workload coordination and access to support are treated as part of the learning environment, though implementation varies." },
+      { year: "2036 · WIDER SYSTEM", text: "A mixed approach becomes possible in some institutions: automation is used where it helps, human judgment remains accountable, and the time and resource costs of technology are considered. The balance is continually contested rather than settled forever." }
+    ],
+    plausibility: "This trajectory becomes more plausible when individual coping strategies are shared honestly and instructors respond to both learning needs and the conditions that shape student choices. It requires collective maintenance, not a single heroic decision.",
+    benefits: "More room for purposeful tool use, shared problem-solving, visible learning, and conversations about workload before students reach a breaking point.",
+    tradeoffs: "These practices take time, require coordination, and may conflict with institutions that reward speed and volume. Improvements remain uneven and can be reversed.",
+    uncertainty: "It remains uncertain whether this balance can survive competing demands for speed, lower costs, and ever-increasing output."
+  }
+};
+
+function clamp(value, min = -8, max = 8) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function applyChoice(choice, sceneKey) {
+  const scene = SCENES[sceneKey];
+  const decisionNo = scene.decisionNo;
+  sessionHistory.choices[`d${decisionNo}`] = choice.key;
+
+  if (choice.delta) {
+    for (const [key, value] of Object.entries(choice.delta)) {
+      if (typeof sessionHistory[key] === "number") sessionHistory[key] = clamp(sessionHistory[key] + value);
+    }
+  }
+  if (choice.signals) {
+    for (const [key, value] of Object.entries(choice.signals)) {
+      if (typeof sessionHistory.patterns[key] === "number") sessionHistory.patterns[key] += value;
+    }
+  }
+
+  updateTravelingTrace(decisionNo, choice, sessionHistory);
+
+  if (choice.personalEvent) sessionHistory.personalLog.push(choice.personalEvent);
+
+  const dynamicWorldMsg = generateDynamicWorldEvent(decisionNo, choice.key, sessionHistory);
+  sessionHistory.worldLog.push(dynamicWorldMsg);
+}
+
+function triggerCinematicDissolve(callback) {
+  if (isDissolving) return;
+  isDissolving = true;
+  const win = document.getElementById("terminal-window");
+  win.classList.add("fading-out");
+  setTimeout(() => {
+    callback();
+    win.classList.remove("fading-out");
+    setTimeout(() => { isDissolving = false; }, 520);
+  }, 500);
+}
+
+function traceSceneEcho(sceneKey) {
+  const trace = sessionHistory.trace;
+  if (!trace.type) return "";
+
+  if (sceneKey === "d5_slc_seminar") {
+    return `<div class="trace-echo"><strong>What travelled from Songdo</strong><p>${trace.peer}</p><p><em>The first exchange has reached a new person. What happens next depends on how they adapt it, not only on what you meant to share.</em></p></div>`;
+  }
+  if (sceneKey === "d6_course_feedback" && trace.classroom) {
+    return `<div class="trace-echo"><strong>Where the trace changed</strong><p>${trace.classroom}</p><p>${trace.institutional || "The seminar's example gives the next conversation a starting point, but the response is still undecided."}</p></div>`;
+  }
+  return "";
+}
+
+function renderScene(sceneKey) {
+  currentStepKey = sceneKey;
+  isTransitionScreen = false;
+  pendingNextStep = null;
+
+  if (sceneKey === "ending_reveal") {
+    renderEndingView();
+    return;
+  }
+
+  const scene = SCENES[sceneKey];
+  document.getElementById("step-indicator").innerText = scene.stepLabel || "Prologue · Looking Back";
+  document.getElementById("scene-timestamp").innerText = scene.timestamp;
+  document.getElementById("scene-context-tag").innerText = scene.context;
+  document.getElementById("logged-row").style.display = "none";
+
+  let prose = typeof scene.proseFn === "function" ? scene.proseFn(sessionHistory) : scene.prose;
+  prose += traceSceneEcho(sceneKey);
+  document.getElementById("scene-prose").innerHTML = prose;
+
+  const residueEl = document.getElementById("residue-note");
+  const residue = typeof scene.residueFn === "function" ? scene.residueFn(sessionHistory) : null;
+  if (residue) {
+    residueEl.textContent = residue;
+    residueEl.style.display = "block";
+  } else {
+    residueEl.style.display = "none";
+    residueEl.textContent = "";
+  }
+
+  const controls = document.getElementById("controls-container");
+  controls.innerHTML = "";
+
+  if (scene.buttonText) {
+    const startBtn = document.createElement("button");
+    startBtn.className = "primary-btn";
+    startBtn.innerHTML = `<span>${scene.buttonText}</span> <span>→</span>`;
+    startBtn.onclick = () => triggerCinematicDissolve(() => renderScene(scene.next));
+    controls.appendChild(startBtn);
+    document.getElementById("footer-instruction").innerText = "Press [Enter] or [Space] to begin";
+    document.getElementById("dual-history-wrap").style.display = "none";
+    return;
+  }
+
+  document.getElementById("footer-instruction").innerText = "Press [1], [2], or [3] to choose";
+  scene.choices.forEach((choice, idx) => {
+    const button = document.createElement("button");
+    button.className = "choice-btn";
+    button.innerHTML = `<span class="btn-key">${idx + 1}</span><span>${choice.text}</span>`;
+    button.onclick = () => triggerCinematicDissolve(() => showConsequenceScreen(choice, sceneKey));
+    controls.appendChild(button);
+  });
+
+  if (sessionHistory.personalLog.length > 0) {
+    updateTimelineFeeds();
+    document.getElementById("dual-history-wrap").style.display = "grid";
+  } else {
+    document.getElementById("dual-history-wrap").style.display = "none";
+  }
+}
+
+function showConsequenceScreen(choice, sceneKey) {
+  isTransitionScreen = true;
+  pendingNextStep = choice.next;
+  applyChoice(choice, sceneKey);
+
+  document.getElementById("dual-history-wrap").style.display = "none";
+
+  document.getElementById("step-indicator").innerText = `Consequence Logged · Decision ${SCENES[sceneKey].decisionNo} of 6`;
+  document.getElementById("scene-timestamp").innerText = "IMMEDIATE AFTERMATH";
+  document.getElementById("scene-context-tag").innerText = "ONE EVENT ADDED TO THE TIMELINE";
+  document.getElementById("logged-row").style.display = "flex";
+  let consequenceHtml = choice.consequenceProse;
+  if (SCENES[sceneKey].decisionNo === 4 && sessionHistory.trace.type) {
+    consequenceHtml += `<div class="trace-echo"><strong>What travels beyond you · ${sessionHistory.trace.title}</strong><p>${sessionHistory.trace.peer}</p><p><em>It has reached one other person. Its wider effects are not yet known.</em></p></div>`;
+  }
+  if (SCENES[sceneKey].decisionNo === 6 && sessionHistory.trace.institutional) {
+    consequenceHtml += `<div class="trace-echo"><strong>What enters the conversation</strong><p>${sessionHistory.trace.institutional}</p></div>`;
+  }
+  document.getElementById("scene-prose").innerHTML = consequenceHtml;
+  document.getElementById("residue-note").style.display = "none";
+
+  const controls = document.getElementById("controls-container");
+  controls.innerHTML = "";
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "primary-btn";
+  nextBtn.innerHTML = `<span>Continue</span> <span>→</span>`;
+  nextBtn.onclick = handleNextTransition;
+  controls.appendChild(nextBtn);
+  document.getElementById("footer-instruction").innerText = "Read the consequence, then click Continue";
+}
+
+function handleNextTransition() {
+  if (!pendingNextStep || isDissolving) return;
+  const target = pendingNextStep;
+  triggerCinematicDissolve(() => renderScene(target));
+}
+
+function updateTimelineFeeds() {
+  const pFeed = document.getElementById("personal-timeline-feed");
+  const wFeed = document.getElementById("world-timeline-feed");
+  pFeed.innerHTML = "";
+  wFeed.innerHTML = "";
+
+  sessionHistory.personalLog.forEach((item, idx) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    if (idx === sessionHistory.personalLog.length - 1) li.classList.add("recent");
+    pFeed.appendChild(li);
+  });
+  sessionHistory.worldLog.forEach((item, idx) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    if (idx === sessionHistory.worldLog.length - 1) li.classList.add("recent");
+    wFeed.appendChild(li);
+  });
+  document.getElementById("personal-event-count").innerText = `${sessionHistory.personalLog.length} logged`;
+  document.getElementById("world-event-count").innerText = `${sessionHistory.worldLog.length} logged`;
+}
+
+/* ============================================================
+   ROBUST CUMULATIVE ENDING DETERMINATION
+   ============================================================ */
+function determineFinalEnding() {
+  const p = sessionHistory.patterns;
+  const ws = sessionHistory.worldState;
+  
+  const scores = {
+    A: (p.efficiency * 1.2) + (p.delegation * 1.5) + (p.peerAutomation * 1.5) + (p.toolAccess * 1.5) + p.preparedScaffold 
+       + (ws.peerDiffusion * 1.2) - (sessionHistory.ownership * 0.8),
+       
+    B: (p.verification * 1.5) + (p.peerVerification * 1.5) + (p.unscripted * 1.5) + (p.processPolicy * 1.8) 
+       + (sessionHistory.ownership * 1.0) + (sessionHistory.ambiguityTolerance * 0.8) + (ws.criticalFriction * 1.0),
+       
+    C: (p.avoidance * 1.8) + (p.overload * 1.8) + Math.max(0, -sessionHistory.capacity) * 0.8 
+       - (sessionHistory.ambiguityTolerance * 0.8) - (sessionHistory.connection * 0.6) + (ws.institutionalStrain * 0.8),
+       
+    D: (p.restBoundary * 1.5) + (p.peerSupport * 1.8) + (p.helpSeeking * 1.5) + (p.collaborativePlanning * 1.5) + (p.workloadPolicy * 1.8) 
+       + (sessionHistory.connection * 1.0) + (sessionHistory.capacity * 0.5)
+  };
+
+  let bestKey = "D";
+  let bestScore = -Infinity;
+  for (const key of ["A", "B", "C", "D"]) {
+    if (scores[key] > bestScore) {
+      bestScore = scores[key];
+      bestKey = key;
+    }
+  }
+  return bestKey;
+}
+
+function routeSummary() {
+  const p = sessionHistory.patterns;
+  const lines = [];
+  if (sessionHistory.ownership <= -2) {
+    lines.push("You repeatedly leaned on automated scaffolds; starting from your own blank thoughts began to feel like an avoidable friction.");
+  }
+  if (sessionHistory.ownership >= 2) {
+    lines.push("You repeatedly insisted on drafting or questioning arguments yourself, keeping the locus of judgment in your own hands.");
+  }
+  if (sessionHistory.ambiguityTolerance < 0) {
+    lines.push("Incomplete drafts and unresolved questions frequently triggered an urgent pull toward quick closure or digital escape.");
+  }
+  if (sessionHistory.ambiguityTolerance >= 2) {
+    lines.push("You grew more willing to sit with unfinished understanding and test ideas openly with peers.");
+  }
+  if (p.avoidance >= 2) {
+    lines.push("Late-night phone use served as a recurring shield against pressure, providing short-term escape while compounding the next day's fatigue.");
+  }
+  if (p.peerSupport + p.helpSeeking >= 2) {
+    lines.push("You treated vulnerability as a practical connection, opening up honest mutual support with peers and instructors.");
+  }
+  if (lines.length === 0) {
+    lines.push("Your route was balanced and pragmatic; no single coping extreme dominated your academic journey.");
+  }
+  return lines;
+}
+
+function renderEndingView() {
+  const endingKey = determineFinalEnding();
+  const ending = ENDINGS[endingKey];
+  currentStepKey = "ending_reveal";
+  isTransitionScreen = false;
+  pendingNextStep = null;
+
+  document.getElementById("step-indicator").innerText = "Epilogue · The World That Followed";
+  document.getElementById("scene-timestamp").innerText = "2036 · ONE POSSIBLE TRAJECTORY";
+  document.getElementById("scene-context-tag").innerText = "A SPECULATIVE FUTURE, NOT A PREDICTION";
+  document.getElementById("residue-note").style.display = "none";
+  document.getElementById("logged-row").style.display = "none";
+
+  const traceHtml = routeSummary().map(line => `<li>${line}</li>`).join("");
+  const proseEl = document.getElementById("scene-prose");
+  proseEl.innerHTML = `
+    <div class="ending-block">
+      <div class="ending-title-group">
+        <div class="ending-title">${ending.title}</div>
+        <div class="ending-subtitle">${ending.subtitle}</div>
+      </div>
+      <div style="font-size:0.86rem; color:#d4d4d8; line-height:1.7;">
+        <p><strong>Your life in this world:</strong> ${ending.personalLife}</p>
+      </div>
+      <div class="ending-milestones">
+        ${ending.milestones.map(item => `<div class="milestone-item"><strong>${item.year}</strong>${item.text}</div>`).join("")}
+      </div>
+      <div class="analysis-card trace-remaining-card">
+        <div class="comparison-title trace-card-title">The Trace That Remained · ${sessionHistory.trace.title || "One small practice"}</div>
+        <p class="trace-item"><strong>Where it began · 2024</strong>${sessionHistory.trace.origin || "A small response to an overwhelming moment."}</p>
+        <p class="trace-item"><strong>What travelled · 2026</strong>${sessionHistory.trace.peer || "The first response may have remained private, or its wider effect may be difficult to trace."}</p>
+        <p class="trace-item"><strong>Where it changed · Spring 2027</strong>${sessionHistory.trace.classroom || "The experience entered a new setting, where its meaning could change."}</p>
+        <p class="trace-item"><strong>What entered the conversation · Fall 2027</strong>${sessionHistory.trace.institutional || "The experience may have remained local, without a clear institutional echo."}</p>
+        <p class="trace-item"><strong>What remained by 2036</strong>${traceLongTermText(endingKey)}</p>
+        <p class="trace-caveat">This trace is a plausible story, not a claim that one student's action caused a social change by itself. Other people adapted it, ignored it, or changed it along the way.</p>
+      </div>
+      <div class="ending-analysis-grid">
+        <div class="analysis-card"><strong>What in your route mattered</strong><ul style="padding-left:16px; margin-top:6px;">${traceHtml}</ul></div>
+        <div class="analysis-card"><strong>Benefits and genuine relief</strong>${ending.benefits}</div>
+        <div class="analysis-card"><strong>Unresolved costs and trade-offs</strong>${ending.tradeoffs}</div>
+        <div class="analysis-card"><strong>What remains uncertain</strong>${ending.uncertainty}</div>
+      </div>
+      <p style="font-size:0.78rem; color:#9ca3af;">This is one fictional trajectory assembled from your choices and from other people’s possible responses. It does not claim that your choices alone caused this world or that the future is predictable.</p>
+      <div class="reflective-prompt">“What did your choices make easier? What did they make harder? And what changed beyond you?”</div>
+      <div class="comparison-section">
+        <div class="comparison-header-row"><span class="comparison-title">A Second Timeline · Compare Other Possible Worlds</span></div>
+        <div class="compare-tabs">
+          ${Object.entries(ENDINGS).map(([key, item]) => `<button class="tab-btn ${key === endingKey ? "active" : ""}" data-ending="${key}" aria-pressed="${key === endingKey}">${key}. ${item.title}</button>`).join("")}
+        </div>
+        <div class="compare-panel" id="comparison-panel-content"></div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll(".tab-btn[data-ending]").forEach(button => {
+    button.addEventListener("click", () => switchComparisonTab(button.dataset.ending));
+  });
+  switchComparisonTab(endingKey);
+  
+  updateTimelineFeeds();
+  document.getElementById("dual-history-wrap").style.display = "grid";
+
+  const controls = document.getElementById("controls-container");
+  controls.innerHTML = "";
+  const rebootBtn = document.createElement("button");
+  rebootBtn.className = "primary-btn";
+  rebootBtn.innerHTML = `<span>Start another timeline</span> <span>↺</span>`;
+  rebootBtn.onclick = () => triggerCinematicDissolve(resetSimulation);
+  controls.appendChild(rebootBtn);
+  document.getElementById("footer-instruction").innerText = "Compare other trajectories or restart the simulation";
+}
+
+function switchComparisonTab(key) {
+  const target = ENDINGS[key];
+  if (!target) return;
+  document.querySelectorAll(".tab-btn[data-ending]").forEach(tab => {
+    const active = tab.dataset.ending === key;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-pressed", String(active));
+  });
+  const panel = document.getElementById("comparison-panel-content");
+  if (!panel) return;
+  panel.innerHTML = `
+    <div style="color:#fff; font-weight:700; margin-bottom:6px;">${target.title}</div>
+    <p style="margin-bottom:8px;">${target.subtitle}</p>
+    <p style="margin-bottom:8px;"><strong>Personal life:</strong> ${target.personalLife}</p>
+    <p style="margin-bottom:8px;"><strong>2036 trajectory:</strong> ${target.milestones[2].text}</p>
+    <p style="margin-bottom:8px;"><strong>The trace in this world:</strong> ${traceLongTermText(key)}</p>
+    <p><strong>Trade-off:</strong> ${target.tradeoffs}</p>
+  `;
+}
+
+function resetSimulation() {
+  sessionHistory.choices = {};
+  sessionHistory.personalLog = [];
+  sessionHistory.worldLog = [];
+  sessionHistory.ownership = 0;
+  sessionHistory.capacity = 0;
+  sessionHistory.ambiguityTolerance = 0;
+  sessionHistory.connection = 0;
+  sessionHistory.worldState.peerDiffusion = 0;
+  sessionHistory.worldState.criticalFriction = 0;
+  sessionHistory.worldState.institutionalStrain = 0;
+  sessionHistory.trace = {
+    originChoice: null,
+    origin: "",
+    type: null,
+    title: "",
+    bridge: "",
+    peer: "",
+    classroom: "",
+    institutional: "",
+    fate: null
+  };
+  Object.keys(sessionHistory.patterns).forEach(key => { sessionHistory.patterns[key] = 0; });
+  
+  updateTimelineFeeds();
+  document.getElementById("dual-history-wrap").style.display = "none";
+  renderScene("prologue");
+}
+
+/* Keyboard controls and modal */
+window.addEventListener("keydown", (event) => {
+  if (isDissolving) return;
+  if (event.key === "Escape") {
+    document.getElementById("author-modal").classList.remove("active");
+    return;
+  }
+  if (event.target && ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)) return;
+
+  if (isTransitionScreen && pendingNextStep) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleNextTransition();
+    }
+    return;
+  }
+  if (currentStepKey === "prologue") {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      triggerCinematicDissolve(() => renderScene(SCENES.prologue.next));
+    }
+    return;
+  }
+  const scene = SCENES[currentStepKey];
+  if (scene && scene.choices && !isTransitionScreen) {
+    const index = ({ "1": 0, "2": 1, "3": 2, a: 0, b: 1, c: 2 })[event.key.toLowerCase()];
+    if (index !== undefined && scene.choices[index]) {
+      triggerCinematicDissolve(() => showConsequenceScreen(scene.choices[index], currentStepKey));
+    }
+  }
+});
+
+const modal = document.getElementById("author-modal");
+document.getElementById("open-author-note").addEventListener("click", () => modal.classList.add("active"));
+document.getElementById("close-author-modal").addEventListener("click", () => modal.classList.remove("active"));
+modal.addEventListener("click", (event) => {
+  if (event.target === modal) modal.classList.remove("active");
+});
+
+renderScene("prologue");
+</script>
+</body>
+</html>
